@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 
@@ -12,7 +12,22 @@ const apiKey = import.meta.env.VITE_OPENWEATHERMAP_API_KEY;
 function WeatherApp() {
   const [cityName, setCity] = useState("");
   const [weatherData, setWeatherData] = useState({});
+  const [test, setTest] = useState("");
   const keysArray = Object.keys(weatherData);
+  
+
+  useEffect(() => {
+    getMyLocation()
+
+
+    console.log("Update Trigger",test)
+    
+    return () => {
+      setCity("")
+      setWeatherData({})
+    };
+  }, [test]); 
+
 
   function getCityInfo(city) {
     axios
@@ -63,6 +78,10 @@ function WeatherApp() {
     setCity(event.target.value);
   };
 
+  const testFunc = () => {
+    setTest(test + 1)
+  }
+
   function getMyLocation() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -77,10 +96,15 @@ function WeatherApp() {
     );
   }
 
+
+
+
   return (
     <div className="container">
       <button onClick={() => getMyLocation()}>Use Current Location</button>
       <button onClick={() => getCityInfo(cityName)}>Submit</button>
+      <button onClick={() => testFunc()}>test</button>
+
       <input
         type="text"
         placeholder="Enter City Name"
