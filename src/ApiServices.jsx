@@ -41,7 +41,7 @@ export const getWeatherData = (lat, lon, setWeatherData) => {
 
     })
     .catch((error) => {
-      console.error("Error fetching weather :", error);
+      alert("Error fetching weather :", error);
     });
 };
 
@@ -54,7 +54,23 @@ export const getMyLocation = (setWeatherData) => {
       getWeatherData(lat, lon, setWeatherData);
     },
     (error) => {
-      console.error("Error getting own location :", error);
+      alert("Error getting own location :", error);
     }
   );
 };
+
+
+export const getMyLocation2 = async (setWeatherData) => {
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      let lat = position.coords.latitude;
+      let lon = position.coords.longitude;
+
+      getWeatherData(lat, lon, setWeatherData);
+    },
+    (error) => {
+      console.error("Error getting own location :", error);
+    }
+  );
+
+}
