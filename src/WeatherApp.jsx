@@ -1,19 +1,29 @@
 import { useState, useEffect } from "react";
 import { getMyLocation, getCityInfo, getWeatherData } from "./ApiServices";
+import Spinner from "./spinner";
 import "./App.css";
 
 function WeatherApp() {
   const [cityName, setCity] = useState("");
   const [weatherData, setWeatherData] = useState({});
-  const keysArray = Object.keys(weatherData);
   const [temp, setTemp] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const keysArray = Object.keys(weatherData);
 
   useEffect(() => {
-    getMyLocation().then(([lat, lon]) => {
-      getWeatherData(lat, lon).then((data) => {
-        setWeatherData(createDataObject(data));
+    setIsLoading(true);
+
+    setTimeout(() => {
+      getMyLocation().then(([lat, lon]) => {
+        getWeatherData(lat, lon)
+          .then((data) => {
+            setWeatherData(createDataObject(data));
+          })
+          .finally(setIsLoading(false));
+          // remove spinner when done loading
       });
-    });
+    }, 1500);
+    // it loads too fast so i added some delay
 
     return () => {};
   }, []);
@@ -22,10 +32,13 @@ function WeatherApp() {
     const isDropDown = event.target.tagName === "SELECT";
     setCity(event.target.value);
     if (isDropDown) {
+      setTemp(false);
       getCityInfo(event.target.value).then(([lat, lon]) => {
-        getWeatherData(lat, lon).then((data) => {
-          setWeatherData(createDataObject(data));
-        });
+        getWeatherData(lat, lon)
+          .then((data) => {
+            setWeatherData(createDataObject(data));
+          })
+          .finally(setIsLoading(false));
       });
     }
   };
@@ -40,22 +53,21 @@ function WeatherApp() {
       const convertedWeather = { ...weather };
       for (const key in convertedWeather) {
         const value = convertedWeather[key];
-        if (typeof value === "number") {
+        if (typeof value === "number" && key !== "humidity") {
           convertedWeather[key] = convertTemperature(value, toggleFahrenheit);
         }
       }
       return convertedWeather;
     });
   };
-  
+
   const convertTemperature = (celsius, toggleFahrenheit) => {
     if (toggleFahrenheit) {
-      return (celsius * 9/5) + 32;
+      return parseFloat(((celsius * 9) / 5 + 32).toFixed(1));
     } else {
-      return ((celsius - 32) * 5/9);
+      return parseFloat((((celsius - 32) * 5) / 9).toFixed(1));
     }
   };
-  
 
   const createDataObject = (data) => {
     try {
@@ -64,8 +76,6 @@ function WeatherApp() {
       const { temp, weather, humidity, feels_like } = firstDataSet;
       const [weatherObject] = weather;
       const { main: mainWeather, description } = weatherObject;
-      
- 
 
       const dataObject = {
         mainWeather,
@@ -85,10 +95,14 @@ function WeatherApp() {
     <div className="container">
       <button
         onClick={() => {
+          setTemp(false);
           getMyLocation().then(([lat, lon]) => {
-            getWeatherData(lat, lon).then((data) => {
-              setWeatherData(createDataObject(data));
-            });
+            getWeatherData(lat, lon)
+              .then((data) => {
+                setWeatherData(createDataObject(data));
+              })
+              .finally(setIsLoading(false));
+              
           });
         }}
       >
@@ -96,10 +110,13 @@ function WeatherApp() {
       </button>
       <button
         onClick={() => {
+          setTemp(false);
           getCityInfo(cityName).then(([lat, lon]) => {
-            getWeatherData(lat, lon).then((data) => {
-              setWeatherData(createDataObject(data));
-            });
+            getWeatherData(lat, lon)
+              .then((data) => {
+                setWeatherData(createDataObject(data));
+              })
+              .finally(setIsLoading(false));
           });
         }}
       >
@@ -109,7 +126,7 @@ function WeatherApp() {
       <label htmlFor="dropdown">Select an option:</label>
       <select id="dropdown" onChange={handleInputChange}>
         <option value="dubai">Dubai</option>
-        <option value="rome">Rome</option>
+        <option value="hawaii">Hawaii</option>
         <option value="london">London</option>
       </select>
       <p>Selected option: {cityName}</p>
@@ -125,7 +142,6 @@ function WeatherApp() {
           Toggle Fahrenheit
         </label>
       </div>
-      <p id="temperature">test</p>
 
       <input
         type="text"
@@ -135,12 +151,15 @@ function WeatherApp() {
       />
 
       <br />
-
-      {keysArray.map((key) => (
-        <div key={key}>
-          <li>{key + " : " + weatherData[key]}</li>
-        </div>
-      ))}
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        keysArray.map((key) => (
+          <div key={key}>
+            <li>{key + " : " + weatherData[key]}</li>
+          </div>
+        ))
+      )}
     </div>
   );
 }
