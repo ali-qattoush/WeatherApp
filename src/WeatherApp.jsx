@@ -7,22 +7,18 @@ function WeatherApp() {
   const [cityName, setCity] = useState("");
   const [weatherData, setWeatherData] = useState({});
   const [temp, setTemp] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const keysArray = Object.keys(weatherData);
 
   useEffect(() => {
-    setIsLoading(true);
-
-    setTimeout(() => {
-      getMyLocation().then(([lat, lon]) => {
-        getWeatherData(lat, lon)
-          .then((data) => {
-            setWeatherData(createDataObject(data));
-          })
-          .finally(setIsLoading(false));
-          // remove spinner when done loading
-      });
-    }, 1500);
+    getMyLocation().then(([lat, lon]) => {
+      getWeatherData(lat, lon)
+        .then((data) => {
+          setWeatherData(createDataObject(data));
+        })
+        .finally(setIsLoading(false));
+        // remove spinner when done loading
+    });
     // it loads too fast so i added some delay
 
     return () => {};
