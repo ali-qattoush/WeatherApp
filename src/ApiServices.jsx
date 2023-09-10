@@ -31,7 +31,7 @@ export const getWeatherData = (lat, lon, unit = "metric") => {
         `https://api.openweathermap.org/data/2.5/forecast/daily?lat=${lat}&lon=${lon}&units=${unit}&appid=${apiKey}`
       )
       .then((response) => resolve(response.data))
-      .catch((error) => reject(alert("Error fetching weather :", error)));
+      .catch((error) => reject(error));
   });
 };
 
@@ -40,9 +40,8 @@ export const getMyLocation = () => {
     navigator.geolocation.getCurrentPosition((position) => {
       let lat = position.coords.latitude;
       let lon = position.coords.longitude;
-      const latLon = [lat, lon];
-      
-      resolve(latLon);
+  
+      resolve([lat, lon]);
     }),
       (error) => {
         reject(error); 
